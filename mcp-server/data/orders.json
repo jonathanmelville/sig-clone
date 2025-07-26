@@ -1,0 +1,104 @@
+{
+  "orders": [
+    {
+      "id": "15058365",
+      "status": "ACKNOWLEDGED",
+      "customer": "Acme Corporation",
+      "orderDate": "2024-01-15T10:30:00Z",
+      "deliveryDate": "2024-01-25T14:00:00Z",
+      "totalAmount": 2450.75,
+      "modifiable": true,
+      "lineItems": [
+        {
+          "id": "item-001",
+          "productName": "Industrial Steel Pipes",
+          "sku": "STEEL-PIPE-6IN",
+          "quantity": 50,
+          "unitPrice": 25.50,
+          "totalPrice": 1275.00
+        },
+        {
+          "id": "item-002",
+          "productName": "Hydraulic Valves",
+          "sku": "HYD-VALVE-2IN",
+          "quantity": 25,
+          "unitPrice": 47.03,
+          "totalPrice": 1175.75
+        }
+      ]
+    },
+    {
+      "id": "15058364",
+      "status": "ACKNOWLEDGED",
+      "customer": "Global Manufacturing",
+      "orderDate": "2024-01-14T09:15:00Z",
+      "deliveryDate": "2024-01-24T16:00:00Z",
+      "totalAmount": 1890.25,
+      "modifiable": true,
+      "lineItems": [
+        {
+          "id": "item-003",
+          "productName": "Aluminum Sheets",
+          "sku": "ALUM-SHEET-4X8",
+          "quantity": 30,
+          "unitPrice": 45.25,
+          "totalPrice": 1357.50
+        },
+        {
+          "id": "item-004",
+          "productName": "Copper Wire",
+          "sku": "COPPER-WIRE-12GA",
+          "quantity": 15,
+          "unitPrice": 35.52,
+          "totalPrice": 532.75
+        }
+      ]
+    },
+    {
+      "id": "15053222",
+      "status": "IN_TRANSIT",
+      "customer": "Tech Solutions Inc",
+      "orderDate": "2024-01-10T11:45:00Z",
+      "deliveryDate": "2024-01-20T12:00:00Z",
+      "totalAmount": 3200.00,
+      "modifiable": false,
+      "lineItems": [
+        {
+          "id": "item-005",
+          "productName": "Circuit Boards",
+          "sku": "PCB-MAIN-001",
+          "quantity": 100,
+          "unitPrice": 32.00,
+          "totalPrice": 3200.00
+        }
+      ]
+    },
+    {
+      "id": "5147501",
+      "status": "SENDING",
+      "customer": "Precision Engineering",
+      "orderDate": "2024-01-16T08:20:00Z",
+      "deliveryDate": "2024-01-26T10:00:00Z",
+      "totalAmount": 875.50,
+      "modifiable": true,
+      "lineItems": [
+        {
+          "id": "item-006",
+          "productName": "Titanium Bolts",
+          "sku": "TI-BOLT-M8",
+          "quantity": 200,
+          "unitPrice": 3.75,
+          "totalPrice": 750.00
+        },
+        {
+          "id": "item-007",
+          "productName": "Stainless Steel Nuts",
+          "sku": "SS-NUT-M8",
+          "quantity": 200,
+          "unitPrice": 0.63,
+          "totalPrice": 125.50
+        }
+      ]
+    }
+  ]
+} 

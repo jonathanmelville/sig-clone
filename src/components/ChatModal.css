@@ -44,6 +44,27 @@
   font-family: var(--font-family);
 }
 
+.chat-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chat-modal-settings {
+  background: none;
+  border: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.chat-modal-settings:hover {
+  background-color: #f3f4f6;
+  color: var(--text-color-primary);
+}
+
 .chat-modal-close {
   background: none;
   border: none;
