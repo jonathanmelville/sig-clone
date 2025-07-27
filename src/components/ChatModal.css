@@ -152,6 +152,90 @@
   border-bottom-left-radius: 4px;
 }
 
+/* Markdown styling for bot messages */
+.bot-message .message-text h1,
+.bot-message .message-text h2,
+.bot-message .message-text h3,
+.bot-message .message-text h4,
+.bot-message .message-text h5,
+.bot-message .message-text h6 {
+  margin: 8px 0 4px 0;
+  font-weight: 600;
+  color: #374151;
+}
+
+.bot-message .message-text p {
+  margin: 4px 0;
+}
+
+.bot-message .message-text ul,
+.bot-message .message-text ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.bot-message .message-text li {
+  margin: 2px 0;
+}
+
+.bot-message .message-text strong,
+.bot-message .message-text b {
+  font-weight: 600;
+  color: #111827;
+}
+
+.bot-message .message-text em,
+.bot-message .message-text i {
+  font-style: italic;
+}
+
+.bot-message .message-text code {
+  background-color: #e5e7eb;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+}
+
+.bot-message .message-text pre {
+  background-color: #e5e7eb;
+  padding: 8px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.bot-message .message-text pre code {
+  background: none;
+  padding: 0;
+}
+
+.bot-message .message-text blockquote {
+  border-left: 3px solid #d1d5db;
+  margin: 8px 0;
+  padding-left: 12px;
+  color: #6b7280;
+}
+
+.bot-message .message-text table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.bot-message .message-text th,
+.bot-message .message-text td {
+  border: 1px solid #d1d5db;
+  padding: 6px 8px;
+  text-align: left;
+}
+
+.bot-message .message-text th {
+  background-color: #f3f4f6;
+  font-weight: 600;
+}
+
 .message-timestamp {
   font-size: 11px;
   color: #9ca3af;
@@ -204,9 +288,37 @@
 }
 
 .chat-send-button:disabled {
-  background-color: #d1d5db;
+  background-color: #f3f4f6;
+  color: #9ca3af;
   cursor: not-allowed;
-  transform: none;
+}
+
+/* Loading state styles */
+.loading-message {
+  opacity: 0.8;
+}
+
+.loading-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+  color: #6b7280;
+}
+
+.chat-input:disabled {
+  background-color: #f9fafb;
+  color: #9ca3af;
+  cursor: not-allowed;
+}
+
+.chat-input:disabled::placeholder {
+  color: #9ca3af;
 }
 
 /* Animations */
@@ -238,6 +350,15 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 

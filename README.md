@@ -41,34 +41,50 @@ npm install
 ./setup-fonts.sh
 ```
 
-4. **Start the development server**
+4. **Initialize data files** (Automatic)
+```bash
+# Data files are automatically initialized on startup
+# Or run manually:
+npm run init-data
+```
+
+5. **Start the development server**
 ```bash
 npm start
 ```
 
-5. **Open your browser**
+6. **Open your browser**
 Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 🌐 Deployment
+
+### Local Development
+- Uses `orders.json` file for data persistence
+- No external dependencies required
+- Full functionality for development and testing
+
+### Production (Vercel)
+- Uses Edge Config for global data storage
+- Automatic environment detection
+- See [Edge Config Setup Guide](./EDGE_CONFIG_SETUP.md) for deployment instructions
 
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── Sidebar.js          # Left navigation sidebar
-│   ├── Sidebar.css
-│   ├── Header.js           # Top header with title
-│   ├── Header.css
-│   ├── ActionCards.js      # Action buttons section
-│   ├── ActionCards.css
-│   ├── Overview.js         # Orders and transfers overview
-│   ├── Overview.css
-│   ├── Icon.js             # Reusable icon component
-│   └── Icon.css
-├── App.js                  # Main application component
-├── App.css                 # Main layout styles
-├── fonts.css               # Custom font declarations
-├── index.js                # Application entry point
-└── index.css               # Global styles
+signal-dashboard/
+├── src/                    # React frontend
+│   ├── components/         # UI components
+│   ├── services/           # API services
+│   ├── config/             # Configuration files
+│   └── App.js              # Main application
+├── mcp-server/            # MCP server backend
+│   ├── api/               # Serverless functions
+│   ├── data/              # Data files
+│   └── package.json       # Server dependencies
+├── scripts/               # Utility scripts
+│   └── init-data.js       # Data initialization
+├── public/                # Static assets
+└── package.json           # Frontend dependencies
 ```
 
 ## 🎨 Design System
@@ -94,10 +110,11 @@ src/
 
 ## 🛠️ Available Scripts
 
-- `npm start` - Runs the app in development mode
-- `npm build` - Builds the app for production
-- `npm test` - Launches the test runner
-- `npm eject` - Ejects from Create React App (one-way operation)
+- `npm start` - Start both frontend and MCP server
+- `npm run start:frontend` - Start only the React frontend
+- `npm run start:mcp` - Start only the MCP server
+- `npm run build` - Build the React app for production
+- `npm run init-data` - Initialize data files from template
 
 ## 📦 Technologies Used
 
@@ -106,6 +123,28 @@ src/
 - **CSS3**: Custom styling with modern CSS features
 - **Flexbox**: Responsive layout system
 - **Apercu Font**: Custom typography
+- **Node.js**: Backend server with Express
+- **Vercel Edge Config**: Production data storage
+
+## 📊 Data Management
+
+### Data Abstraction Layer
+The project uses a data abstraction layer that automatically switches between storage methods:
+
+- **Local Development**: File-based storage (`orders.json`)
+- **Production**: Edge Config for global caching
+
+### Data Flow
+1. **Frontend** → **MCP Server** → **Data Service**
+2. **Data Service** detects environment and routes accordingly
+3. **Same API interface** for both environments
+
+### Files
+- `src/services/dataService.js` - Data abstraction layer
+- `api/orders.js` - Local file operations
+- `api/edge-config/update.js` - Edge Config operations
+- `mcp-server/data/orders.template.json` - Template data
+- `mcp-server/data/orders.json` - Local data (gitignored)
 
 ## 🎯 Customization
 

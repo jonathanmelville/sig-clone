@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ChatModal.css';
-import { Send, X, Bot, User, Settings } from 'lucide-react';
+import { Send, X, Bot, User, Settings, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import mcpClient from '../services/mcpClient';
 import aiService from '../services/aiService';
 import AIConfigPanel from './AIConfigPanel';
@@ -9,16 +10,26 @@ const ChatModal = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState([
     {
       id: 1,
-      text: "Hello! I'm your AI assistant. How can I help you today?",
+      text: "Hello! I'm your Signal AI assistant. I can help you with your orders and Pathway procedures. Just ask!",
       sender: 'bot',
       timestamp: new Date()
     }
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   const handleSendMessage = async () => {
-    if (inputMessage.trim() === '') return;
+    if (inputMessage.trim() === '' || isLoading) return;
 
     const newMessage = {
       id: messages.length + 1,
@@ -30,6 +41,7 @@ const ChatModal = ({ isOpen, onClose }) => {
     setMessages([...messages, newMessage]);
     const userInput = inputMessage;
     setInputMessage('');
+    setIsLoading(true);
 
     // Process the message and get AI response
     try {
@@ -49,129 +61,44 @@ const ChatModal = ({ isOpen, onClose }) => {
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !isLoading) {
       handleSendMessage();
     }
   };
 
   const processUserMessage = async (message) => {
-    const lowerMessage = message.toLowerCase();
-    
-    // Check for get order command
-    if (lowerMessage.includes('get order') || lowerMessage.includes('show order') || lowerMessage.includes('order details')) {
-      const orderIdMatch = message.match(/\d+/);
-      if (orderIdMatch) {
-        const orderId = orderIdMatch[0];
-        try {
-          const response = await mcpClient.getOrder(orderId);
-          return mcpClient.parseOrderResponse(response);
-        } catch (error) {
-          return `Error retrieving order ${orderId}: ${error.message}`;
-        }
-      } else {
-        return "Please provide an order ID. For example: 'Get order 15058365' or 'Show order details for 15058364'";
-      }
-    }
-    
-    // Check for modify order commands
-    if (lowerMessage.includes('modify') || lowerMessage.includes('change') || lowerMessage.includes('update')) {
-      // Extract order ID
-      const orderIdMatch = message.match(/\d+/);
-      if (!orderIdMatch) {
-        return "Please provide an order ID. For example: 'Modify order 15058365'";
-      }
-      
-      const orderId = orderIdMatch[0];
-      
-      // Check for quantity update
-      const quantityMatch = message.match(/(\d+)\s*(?:units?|quantity|qty)/i);
-      if (quantityMatch) {
-        const newQuantity = parseInt(quantityMatch[1]);
-        
-        // Try to identify the product from the message
-        const products = ['steel pipes', 'hydraulic valves', 'aluminum sheets', 'copper wire', 'circuit boards', 'titanium bolts', 'stainless steel nuts'];
-        let lineItemId = null;
-        
-        for (const product of products) {
-          if (lowerMessage.includes(product)) {
-            // Map product names to line item IDs (this is a simplified mapping)
-            const productMap = {
-              'steel pipes': 'item-001',
-              'hydraulic valves': 'item-002',
-              'aluminum sheets': 'item-003',
-              'copper wire': 'item-004',
-              'circuit boards': 'item-005',
-              'titanium bolts': 'item-006',
-              'stainless steel nuts': 'item-007'
-            };
-            lineItemId = productMap[product];
-            break;
-          }
-        }
-        
-        if (lineItemId) {
-          try {
-            const response = await mcpClient.modifyOrder(orderId, lineItemId, 'updateQuantity', newQuantity);
-            return mcpClient.parseOrderResponse(response);
-          } catch (error) {
-            return `Error updating order ${orderId}: ${error.message}`;
-          }
-        } else {
-          return `Please specify which product to modify. Available products: ${products.join(', ')}`;
-        }
-      }
-      
-      // Check for remove item
-      if (lowerMessage.includes('remove') || lowerMessage.includes('delete')) {
-        const products = ['steel pipes', 'hydraulic valves', 'aluminum sheets', 'copper wire', 'circuit boards', 'titanium bolts', 'stainless steel nuts'];
-        let lineItemId = null;
-        
-        for (const product of products) {
-          if (lowerMessage.includes(product)) {
-            const productMap = {
-              'steel pipes': 'item-001',
-              'hydraulic valves': 'item-002',
-              'aluminum sheets': 'item-003',
-              'copper wire': 'item-004',
-              'circuit boards': 'item-005',
-              'titanium bolts': 'item-006',
-              'stainless steel nuts': 'item-007'
-            };
-            lineItemId = productMap[product];
-            break;
-          }
-        }
-        
-        if (lineItemId) {
-          try {
-            const response = await mcpClient.modifyOrder(orderId, lineItemId, 'removeItem');
-            return mcpClient.parseOrderResponse(response);
-          } catch (error) {
-            return `Error removing item from order ${orderId}: ${error.message}`;
-          }
-        } else {
-          return `Please specify which product to remove. Available products: ${products.join(', ')}`;
-        }
-      }
-      
-      return "Please specify what you want to modify. You can:\n- Update quantities: 'Change steel pipes to 75 units in order 15058365'\n- Remove items: 'Remove hydraulic valves from order 15058365'";
-    }
-    
-    // For all other messages, use the AI service
+    // Let the AI service handle all messages
     try {
+      // Get the last few messages for context (excluding the current user message)
+      const recentMessages = messages.slice(-6); // Last 6 messages (3 exchanges)
+      
+      // Get the last bot response specifically
+      const lastBotResponse = messages
+        .filter(m => m.sender === 'bot')
+        .slice(-1)[0]?.text || '';
+      
       const context = {
-        availableOrders: ['15058365', '15058364', '15053222', '5147501'],
-        recentActions: messages.slice(-3).map(m => m.text.substring(0, 50) + '...')
+        availableOrders: ['15058365', '15058364', '15053222'],
+        recentActions: messages.slice(-3).map(m => m.text.substring(0, 50) + '...'),
+        mcpClient: mcpClient, // Pass the MCP client so the AI can use it
+        conversationHistory: recentMessages.map(m => ({
+          sender: m.sender,
+          text: m.text,
+          timestamp: m.timestamp
+        })),
+        lastBotResponse: lastBotResponse // The most recent bot response
       };
       
       return await aiService.generateResponse(message, context);
     } catch (error) {
       console.error('AI Service Error:', error);
-      return `I'm sorry, I encountered an error processing your request. Please try again or ask for help.`;
+      return `❌ **I'm sorry, I encountered an error processing your request.** Please try again or ask for help.`;
     }
   };
 
@@ -183,7 +110,7 @@ const ChatModal = ({ isOpen, onClose }) => {
         <div className="chat-modal-header">
           <div className="chat-modal-title">
             <Bot size={20} />
-            <span>AI Assistant</span>
+            <span>Signal AI Assistant</span>
           </div>
           <div className="chat-modal-actions">
             <button 
@@ -209,13 +136,42 @@ const ChatModal = ({ isOpen, onClose }) => {
                 {message.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
               </div>
               <div className="message-content">
-                <div className="message-text">{message.text}</div>
+                <div className="message-text">
+                  {message.sender === 'bot' ? (
+                    <ReactMarkdown>{message.text}</ReactMarkdown>
+                  ) : (
+                    message.text
+                  )}
+                </div>
                 <div className="message-timestamp">
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
             </div>
           ))}
+          
+          {/* Loading message */}
+          {isLoading && (
+            <div className="chat-message bot-message loading-message">
+              <div className="message-avatar">
+                <Bot size={16} />
+              </div>
+              <div className="message-content">
+                <div className="message-text">
+                  <div className="loading-indicator">
+                    <Loader2 size={16} className="loading-spinner" />
+                    <span>Thinking...</span>
+                  </div>
+                </div>
+                <div className="message-timestamp">
+                  {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Invisible element for auto-scrolling */}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="chat-input-container">
@@ -224,15 +180,20 @@ const ChatModal = ({ isOpen, onClose }) => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Type your message..."
+            placeholder={isLoading ? "Please wait..." : "Type your message..."}
             className="chat-input"
+            disabled={isLoading}
           />
           <button 
             onClick={handleSendMessage}
             className="chat-send-button"
-            disabled={inputMessage.trim() === ''}
+            disabled={inputMessage.trim() === '' || isLoading}
           >
-            <Send size={16} />
+            {isLoading ? (
+              <Loader2 size={16} className="loading-spinner" />
+            ) : (
+              <Send size={16} />
+            )}
           </button>
         </div>
       </div>

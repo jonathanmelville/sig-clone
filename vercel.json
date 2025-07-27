@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/orders.js": {
+      "maxDuration": 10
+    },
+    "api/edge-config/update.js": {
+      "maxDuration": 10
+    }
+  }
+} 

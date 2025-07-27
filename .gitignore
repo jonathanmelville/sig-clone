@@ -94,4 +94,8 @@ jspm_packages/
 .dynamodb/
 
 # TernJS port file
-.tern-port 
+.tern-port
+
+# MCP Server data files (user data, not templates)
+mcp-server/data/orders.json 
+.vercel

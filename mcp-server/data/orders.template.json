@@ -16,8 +16,8 @@
           "productName": "Frozen Chicken Breasts (40 lb case)",
           "sku": "CHK-BREAST-40LB",
           "quantity": 12,
-          "unitPrice": 185.5,
-          "totalPrice": 2226,
+          "unitPrice": 185.50,
+          "totalPrice": 2226.00,
           "notes": ""
         },
         {
@@ -47,8 +47,8 @@
           "productName": "Frozen Chicken Tenders (25 lb case)",
           "sku": "CHK-TENDERS-25LB",
           "quantity": 6,
-          "unitPrice": 245,
-          "totalPrice": 1470,
+          "unitPrice": 245.00,
+          "totalPrice": 1470.00,
           "notes": ""
         },
         {
@@ -68,21 +68,21 @@
       "customer": "Chick-fil-A Westside",
       "orderDate": "2024-01-10T11:45:00Z",
       "deliveryDate": "2024-01-20T12:00:00Z",
-      "totalAmount": 4160,
+      "totalAmount": 3200.00,
       "modifiable": true,
-      "modified": true,
-      "notes": "Updated Frozen Chicken Nuggets (20 lb case) quantity from 12 to 13 units on 2025-07-27T19:20:29.437Z",
+      "modified": false,
+      "notes": "",
       "lineItems": [
         {
           "id": "item-005",
           "productName": "Frozen Chicken Nuggets (20 lb case)",
           "sku": "CHK-NUGGETS-20LB",
-          "quantity": 13,
-          "unitPrice": 320,
-          "totalPrice": 4160,
-          "notes": "Quantity changed from 12 to 13 on 2025-07-27T19:20:29.437Z"
+          "quantity": 10,
+          "unitPrice": 320.00,
+          "totalPrice": 3200.00,
+          "notes": ""
         }
       ]
     }
   ]
-}
+} 

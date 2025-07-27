@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Order schemas
 const OrderIdSchema = z.object({
@@ -7,19 +9,28 @@ const OrderIdSchema = z.object({
 
 const ModifyOrderSchema = z.object({
   orderId: z.string(),
-  lineItemId: z.string().optional(),
-  action: z.enum(['updateQuantity', 'removeItem', 'addItem']),
-  newQuantity: z.number().optional(),
-  productName: z.string().optional(),
-  sku: z.string().optional(),
-  unitPrice: z.number().optional(),
-  quantity: z.number().optional()
+  lineItemId: z.string(),
+  action: z.enum(['updateQuantity', 'removeItem']),
+  newQuantity: z.number().optional()
 });
 
 class OrderManagementServer {
   constructor() {
     this.isProduction = process.env.NODE_ENV === 'production';
     this.edgeConfigUrl = process.env.REACT_APP_EDGE_CONFIG_URL;
+    
+    // Fix the file path to work when running from mcp-server directory
+    const currentDir = process.cwd();
+    if (currentDir.endsWith('mcp-server')) {
+      // Running from mcp-server directory
+      this.ordersFilePath = path.join(currentDir, 'data', 'orders.json');
+    } else {
+      // Running from project root
+      this.ordersFilePath = path.join(currentDir, 'mcp-server', 'data', 'orders.json');
+    }
+    
+    console.log(`🔍 Debug: Server constructor - Current directory: ${currentDir}`);
+    console.log(`🔍 Debug: Server constructor - Orders file path: ${this.ordersFilePath}`);
   }
 
   async loadOrders() {
@@ -31,79 +42,61 @@ class OrderManagementServer {
   }
 
   async saveOrders(orders) {
+    console.log(`🔍 Debug: saveOrders called with ${orders.length} orders`);
+    console.log(`🔍 Debug: isProduction = ${this.isProduction}`);
+    console.log(`🔍 Debug: edgeConfigUrl = ${this.edgeConfigUrl}`);
+    console.log(`🔍 Debug: NODE_ENV = ${process.env.NODE_ENV}`);
+    
     if (this.isProduction && this.edgeConfigUrl) {
+      console.log(`🔍 Debug: Saving to Edge Config`);
       return this.saveToEdgeConfig(orders);
     } else {
-      return this.saveToFile(orders);
+      console.log(`🔍 Debug: Saving to file`);
+      const result = await this.saveToFile(orders);
+      console.log(`🔍 Debug: saveToFile result:`, result);
+      return result;
     }
   }
 
   // Local file operations (for development)
   async loadFromFile() {
     try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const { fileURLToPath } = await import('url');
+      // Always read from the actual orders.json file
+      const fileContent = await fs.readFile(this.ordersFilePath, 'utf8');
+      const data = JSON.parse(fileContent);
       
-      // Get the directory of the current module
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
-      
-      // Path to the orders.json file
-      const dataPath = path.join(__dirname, '..', 'data', 'orders.json');
-      
-      // Check if data file exists
-      try {
-        await fs.access(dataPath);
-      } catch (error) {
-        // Data file doesn't exist, try to initialize from template
-        console.log('Orders data file not found, attempting to initialize from template...');
-        const templatePath = path.join(__dirname, '..', 'data', 'orders.template.json');
-        
-        try {
-          await fs.access(templatePath);
-          const templateContent = await fs.readFile(templatePath, 'utf8');
-          await fs.writeFile(dataPath, templateContent);
-          console.log('✅ Initialized orders data file from template');
-        } catch (templateError) {
-          console.error('❌ Template file not found, creating empty orders file');
-          const emptyOrders = { orders: [] };
-          await fs.writeFile(dataPath, JSON.stringify(emptyOrders, null, 2));
-        }
+      if (!data.orders || !Array.isArray(data.orders)) {
+        throw new Error('Invalid orders.json file structure - missing or invalid orders array');
       }
       
-      const data = await fs.readFile(dataPath, 'utf8');
-      const parsed = JSON.parse(data);
-      
-      console.log(`📋 Loaded ${parsed.orders?.length || 0} orders from file`);
-      return parsed.orders || [];
+      console.log(`✅ Loaded ${data.orders.length} orders from ${this.ordersFilePath}`);
+      return data.orders;
     } catch (error) {
       console.error('Error loading orders from file:', error);
-      return [];
+      throw new Error(`Failed to load orders from ${this.ordersFilePath}: ${error.message}`);
     }
   }
 
   async saveToFile(orders) {
     try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const { fileURLToPath } = await import('url');
+      console.log(`🔍 Debug: Current working directory: ${process.cwd()}`);
+      console.log(`🔍 Debug: Orders file path: ${this.ordersFilePath}`);
+      console.log(`🔍 Debug: Orders to save:`, JSON.stringify(orders, null, 2));
       
-      // Get the directory of the current module
-      const __filename = fileURLToPath(import.meta.url);
-      const __dirname = path.dirname(__filename);
+      // Ensure the directory exists
+      const dir = path.dirname(this.ordersFilePath);
+      console.log(`🔍 Debug: Creating directory: ${dir}`);
+      await fs.mkdir(dir, { recursive: true });
       
-      // Path to the orders.json file
-      const dataPath = path.join(__dirname, '..', 'data', 'orders.json');
+      // Write the orders to the file
       const data = { orders };
+      console.log(`🔍 Debug: Writing data to file:`, JSON.stringify(data, null, 2));
+      await fs.writeFile(this.ordersFilePath, JSON.stringify(data, null, 2), 'utf8');
       
-      // Write the updated orders to the file
-      await fs.writeFile(dataPath, JSON.stringify(data, null, 2));
-      
-      console.log(`✅ Successfully saved ${orders.length} orders to file`);
+      console.log(`✅ Orders saved to ${this.ordersFilePath}`);
       return { success: true };
     } catch (error) {
-      console.error('Error saving orders to file:', error);
+      console.error('❌ Error saving orders to file:', error);
       throw error;
     }
   }
@@ -119,7 +112,7 @@ class OrderManagementServer {
       return data.orders || [];
     } catch (error) {
       console.error('Error loading orders from Edge Config:', error);
-      // Fallback to sample data if Edge Config fails
+      // Fallback to file data if Edge Config fails
       return this.loadFromFile();
     }
   }
@@ -189,14 +182,14 @@ class OrderManagementServer {
 
   async handleModifyOrder(args) {
     try {
-      const { orderId, lineItemId, action, newQuantity, productName, sku, unitPrice, quantity } = ModifyOrderSchema.parse(args);
+      const { orderId, lineItemId, action, newQuantity } = ModifyOrderSchema.parse(args);
       
-      if (!orderId || !action) {
+      if (!orderId || !lineItemId || !action) {
         return {
           content: [
             {
               type: 'text',
-              text: '❌ **Error:** Order ID and action are required.\n\n**Available actions:** `updateQuantity`, `removeItem`, `addItem`'
+              text: '❌ **Error:** Order ID, Line Item ID, and action are required.\n\n**Available actions:** `updateQuantity`, `removeItem`'
             }
           ]
         };
@@ -286,7 +279,12 @@ class OrderManagementServer {
         order.notes = `Updated ${lineItem.productName} quantity from ${oldQuantity} to ${newQuantity} units on ${new Date().toISOString()}`;
         lineItem.notes = `Quantity changed from ${oldQuantity} to ${newQuantity} on ${new Date().toISOString()}`;
         
+        console.log(`🔍 Debug: About to call saveOrders with ${orders.length} orders`);
+        console.log(`🔍 Debug: Modified order:`, JSON.stringify(order, null, 2));
+        
         await this.saveOrders(orders);
+        
+        console.log(`🔍 Debug: saveOrders completed successfully`);
         
         return {
           content: [
@@ -321,7 +319,7 @@ class OrderManagementServer {
 
   formatOrderDetails(order) {
     const lineItemsText = order.lineItems.map(item => {
-      let itemText = `- **${item.productName}** (SKU: \`${item.sku}\`) (ID: \`${item.id}\`)\n  - Quantity: ${item.quantity} | Unit Price: $${item.unitPrice} | Total: $${item.totalPrice}`;
+      let itemText = `- **${item.productName}** (SKU: \`${item.sku}\`)\n  - Quantity: ${item.quantity} | Unit Price: $${item.unitPrice} | Total: $${item.totalPrice}`;
       if (item.notes) {
         itemText += `\n  - Notes: ${item.notes}`;
       }
@@ -355,7 +353,8 @@ class OrderManagementServer {
   }
 }
 
-export default async function handler(req, res) {
+// This is the Express handler function for local development
+export async function mcpHandler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -379,4 +378,9 @@ export default async function handler(req, res) {
     console.error('MCP Server Error:', error);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
-} 
+}
+
+// This is the Vercel serverless function handler
+export default async function handler(req, res) {
+  return await mcpHandler(req, res);
+}
