@@ -1,18 +1,6 @@
-# Signal Dashboard
+# MCP Chat Interface Experiment
 
-A modern React dashboard interface that recreates the Signal application UI with custom Apercu typography and interactive components.
-
-## 🎯 Features
-
-- **Modern Design**: Clean, minimalist interface with proper spacing and typography
-- **Custom Typography**: Apercu font family with multiple weights (Regular, Medium, Bold)
-- **Interactive Components**: Hover effects and clickable elements
-- **Responsive Layout**: Flexbox-based responsive design
-- **Sidebar Navigation**: Vertical navigation with active states and notifications
-- **Action Cards**: Prominent call-to-action buttons for key functions
-- **Overview Section**: Real-time data display for orders and transfers
-- **Status Indicators**: Color-coded status tags for different states
-- **Custom Icon System**: Flexible icon component with border support
+A clone of the Signal homepage interface, mimicking the Signal application UI with a simulated order modification experience via a natual language chat interface.
 
 ## 🚀 Getting Started
 
@@ -25,8 +13,8 @@ A modern React dashboard interface that recreates the Signal application UI with
 
 1. **Clone the repository**
 ```bash
-git clone <your-repo-url>
-cd signal-dashboard
+git clone https://github.com/jonathanmelville/sig-clone.git
+cd sig-clone
 ```
 
 2. **Install dependencies**
@@ -71,53 +59,6 @@ src/
 └── index.css               # Global styles
 ```
 
-## 🎨 Design System
-
-### Colors
-- **Primary Text**: `rgb(55, 66, 74)`
-- **Accent Color**: `#dc2626` (Red)
-- **Background**: `#f5f5f5` (Light Gray)
-- **Status Tags**: 
-  - Acknowledged: Blue (`#1e40af`)
-  - Action Required: Orange (`#d97706`)
-
-### Typography
-- **Font Family**: Apercu (with system font fallbacks)
-- **Weights**: Regular (400), Medium (500), Bold (700)
-- **Sizes**: 14px to 75px depending on hierarchy
-
-### Components
-- **Cards**: White background with subtle shadows
-- **Buttons**: Red accent color with hover effects
-- **Icons**: Lucide React icons with custom styling
-- **Navigation**: Active states with red indicators
-
-## 🛠️ Available Scripts
-
-- `npm start` - Runs the app in development mode
-- `npm build` - Builds the app for production
-- `npm test` - Launches the test runner
-- `npm eject` - Ejects from Create React App (one-way operation)
-
-## 📦 Technologies Used
-
-- **React 18**: Modern React with hooks
-- **Lucide React**: Icon library for consistent iconography
-- **CSS3**: Custom styling with modern CSS features
-- **Flexbox**: Responsive layout system
-- **Apercu Font**: Custom typography
-
-## 🎯 Customization
-
-The application is built with modular components, making it easy to:
-
-- **Modify colors and styling** via CSS variables
-- **Add new navigation items** in the sidebar
-- **Extend the overview sections** with new data
-- **Add new action cards** for additional functionality
-- **Implement actual functionality** for buttons and links
-- **Customize icons** using the flexible Icon component
-
 ## 🔧 Font Setup
 
 ### Required Apercu Font Files
@@ -135,21 +76,6 @@ The application is built with modular components, making it easy to:
 2. Run `./setup-fonts.sh` to activate fonts
 3. Restart development server
 
-## 📝 Development Notes
-
-- **Icon Component**: Flexible icon wrapper with border support
-- **CSS Variables**: Centralized color and font management
-- **Responsive Design**: Mobile-friendly layout structure
-- **Performance**: Optimized font loading with `font-display: swap`
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+UNLICENSED
